@@ -30,8 +30,8 @@ var sentCount = 0
 
 const (
 	Url        = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
-	OK         = "[OK]"
-	Alerting   = "[Alerting]"
+	OK         = "ok"
+	Alerting   = "alerting"
 	ColorGreen = "info"
 	ColorGray  = "comment"
 	ColorRed   = "warning"
@@ -60,12 +60,13 @@ func SendMsg(c *gin.Context) {
 	url := Url + c.Query("key")
 
 	// 消息体
-	msgType := c.Query("type")
-	if msgType == "news" {
-		msgStr := MsgNews(h)
+	var msgType, msgStr string
+	if c.Query("type") == "news" {
+		msgType = "news"
+		msgStr = MsgNews(h)
 	} else {
 		msgType = "markdown"
-		msgStr := MsgMarkdown(h)
+		msgStr = MsgMarkdown(h)
 	}
 
 	jsonStr := []byte(msgStr)
@@ -118,10 +119,11 @@ func MsgNews(h *Hook) string {
 
 // 发送消息类型
 func MsgMarkdown(h *Hook) string {
-	if strings.Contains(h.Title, OK) {
-		color := ColorGreen
+	var color string
+	if h.State == OK {
+		color = ColorGreen
 	} else {
-		color := ColorRed
+		color = ColorRed
 	}
 	return fmt.Sprintf(`
 	{
