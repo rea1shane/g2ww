@@ -46,7 +46,7 @@ func GetSendCount(c *gin.Context) {
 
 // 发送消息
 func SendMsg(c *gin.Context) {
-	fmt.Println("\n------------------------------------------------------------")
+	fmt.Println("\n----------------------------------------------------------------------\n")
 
 	h := &Hook{}
 	data, _ := ioutil.ReadAll(c.Request.Body)
