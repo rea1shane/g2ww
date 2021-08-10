@@ -10,19 +10,20 @@ import (
 	"strings"
 )
 
+// 注释的为数据类型对不上的结构
 type Hook struct {
-	DashboardId string `json:"dashboardId"`
-	EvalMatches string `json:"evalMatches"`
-	ImageUrl    string `json:"imageUrl"`
-	Message     string `json:"message"`
-	OrgId       string `json:"orgId"`
-	PanelId     string `json:"panelId"`
-	RuleId      string `json:"ruleId"`
-	RuleName    string `json:"ruleName"`
-	RuleUrl     string `json:"ruleUrl"`
-	State       string `json:"state"`
-	Tags        string `json:"tags"`
-	Title       string `json:"title"`
+	ImageUrl string `json:"imageUrl"`
+	Message  string `json:"message"`
+	RuleName string `json:"ruleName"`
+	RuleUrl  string `json:"ruleUrl"`
+	State    string `json:"state"`
+	Title    string `json:"title"`
+	// OrgId       string `json:"orgId"`
+	// PanelId     string `json:"panelId"`
+	// RuleId      string `json:"ruleId,omitempty"`
+	// Tags        string `json:"tags"`
+	// DashboardId string `json:"dashboardId"`
+	// EvalMatches string `json:"evalMatches,omitempty"`
 }
 
 var sentCount = 0
@@ -47,8 +48,11 @@ func GetSendCount(c *gin.Context) {
 // 发送消息
 func SendMsg(c *gin.Context) {
 	h := &Hook{}
-	if err := c.BindJSON(&h); err != nil {
-		fmt.Println(err)
+	data, _ := ioutil.ReadAll(c.Request.Body)
+	fmt.Printf("ctx.Request.body: %v\n", string(data))
+
+	if err := json.Unmarshal(data, &h); err != nil {
+		fmt.Println("err:", err.Error())
 		_, _ = c.Writer.WriteString("Error on JSON format")
 		return
 	}
