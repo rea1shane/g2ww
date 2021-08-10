@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 // 注释的为数据类型对不上的结构
@@ -40,7 +41,13 @@ const (
 
 // 记录发送次数
 func GetSendCount(c *gin.Context) {
-	_, _ = c.Writer.WriteString("G2WW Server created by Nova Kwok is running! \nParsed & forwarded \" + strconv.Itoa(sentCount) + \" messages to WeChat Work!")
+	fmt.Println("\n----------------------------------------------------------------------\n")
+
+	_, _ = c.Writer.WriteString("G2WW Server is running! \nParsed & forwarded " + strconv.Itoa(sentCount) + " messages to WeChat Work!")
+
+	fmt.Println("sentCount:", sentCount)
+	fmt.Println()
+
 	return
 }
 
@@ -87,13 +94,13 @@ func SendMsg(c *gin.Context) {
 	sentCount++
 
 	// 日志记录
-	fmt.Println("MsgType  : ", msgType)
-	fmt.Println("Title    : ", h.Title)
-	fmt.Println("RuleName : ", h.RuleName)
-	fmt.Println("State    : ", h.State)
-	fmt.Println("Message  : ", h.Message)
-	fmt.Println("RuleUrl  : ", h.RuleUrl)
-	fmt.Println("ImageUrl : ", h.ImageUrl)
+	fmt.Println("MsgType  :", msgType)
+	fmt.Println("Title    :", h.Title)
+	fmt.Println("RuleName :", h.RuleName)
+	fmt.Println("State    :", h.State)
+	fmt.Println("Message  :", h.Message)
+	fmt.Println("RuleUrl  :", h.RuleUrl)
+	fmt.Println("ImageUrl :", h.ImageUrl)
 	fmt.Println()
 
 	return
