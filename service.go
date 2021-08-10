@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 // 注释的为数据类型对不上的结构
@@ -29,12 +28,14 @@ type Hook struct {
 var sentCount = 0
 
 const (
-	Url        = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
-	OK         = "ok"
-	Alerting   = "alerting"
-	ColorGreen = "info"
-	ColorGray  = "comment"
-	ColorRed   = "warning"
+	Url         = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
+	OK          = "ok"
+	Alerting    = "alerting"
+	OKMsg       = "OK"
+	AlertingMsg = "Alerting"
+	ColorGreen  = "info"
+	ColorGray   = "comment"
+	ColorRed    = "warning"
 )
 
 // 记录发送次数
@@ -45,6 +46,8 @@ func GetSendCount(c *gin.Context) {
 
 // 发送消息
 func SendMsg(c *gin.Context) {
+	fmt.Println("\n------------------------------------------------------------")
+
 	h := &Hook{}
 	data, _ := ioutil.ReadAll(c.Request.Body)
 
@@ -53,8 +56,6 @@ func SendMsg(c *gin.Context) {
 		_, _ = c.Writer.WriteString("Error on JSON format")
 		return
 	}
-
-	marshal, _ := json.Marshal(h)
 
 	// Send to WeChat Work
 	url := Url + c.Query("key")
@@ -119,11 +120,16 @@ func MsgNews(h *Hook) string {
 
 // 发送消息类型
 func MsgMarkdown(h *Hook) string {
-	var color string
+	var color, stateMsg string
 	if h.State == OK {
 		color = ColorGreen
+		stateMsg = OKMsg
+	} else if h.State == Alerting {
+		color = ColorRed
+		stateMsg = AlertingMsg
 	} else {
 		color = ColorRed
+		stateMsg = h.State
 	}
 	return fmt.Sprintf(`
 	{
@@ -131,5 +137,5 @@ func MsgMarkdown(h *Hook) string {
        "markdown": {
            	"content": "<font color=\"%s\">[%s]</font> <font>%s</font>\r\n<font color=\"comment\">%s\r\n[点击查看详情](%s)![](%s)</font>"
        }
-  }`, color, h.State, h.RuleName, h.Message, h.RuleUrl, h.ImageUrl)
+  }`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.ImageUrl)
 }

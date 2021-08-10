@@ -19,7 +19,8 @@ func main() {
 	// 定义变量 用于接收命令行参数
 	var port int
 	flag.IntVar(&port, "port", 3001, "Server port, default: 3001")
-	fmt.Println("G2WW server running on port %d", port)
+	flag.Parse()
+	fmt.Println("G2WW server running on port", port)
 
 	app := gin.Default()
 	// Server Info
@@ -30,7 +31,7 @@ func main() {
 		Handler: app,
 	}
 
-	//启动http请求
+	// 启动http请求
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
