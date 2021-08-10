@@ -84,13 +84,12 @@ func SendMsg(c *gin.Context) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Println("err:", err.Error())
 		_, _ = c.Writer.WriteString("Error sending to WeChat Work API")
 		return
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-
-	_, _ = c.Writer.Write(body)
 	sentCount++
 
 	// 日志记录
