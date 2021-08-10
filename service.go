@@ -29,14 +29,12 @@ type Hook struct {
 var sentCount = 0
 
 const (
-	Url         = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
-	OKMsg       = "告警恢复"
-	AlertingMsg = "触发告警"
-	OK          = "OK"
-	Alerting    = "Alerting"
-	ColorGreen  = "info"
-	ColorGray   = "comment"
-	ColorRed    = "warning"
+	Url        = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
+	OK         = "[OK]"
+	Alerting   = "[Alerting]"
+	ColorGreen = "info"
+	ColorGray  = "comment"
+	ColorRed   = "warning"
 )
 
 // 记录发送次数
@@ -49,7 +47,6 @@ func GetSendCount(c *gin.Context) {
 func SendMsg(c *gin.Context) {
 	h := &Hook{}
 	data, _ := ioutil.ReadAll(c.Request.Body)
-	fmt.Printf("ctx.Request.body: %v\n", string(data))
 
 	if err := json.Unmarshal(data, &h); err != nil {
 		fmt.Println("err:", err.Error())
@@ -58,26 +55,18 @@ func SendMsg(c *gin.Context) {
 	}
 
 	marshal, _ := json.Marshal(h)
-	fmt.Println("接受参数数据：", string(marshal))
-	// 字符串替换
-	h.RuleUrl = strings.ReplaceAll(h.RuleUrl, ":3000", "")
-	color := ColorGreen
-	if strings.Contains(h.Title, OK) {
-		h.Title = strings.ReplaceAll(h.Title, OK, OKMsg)
-	} else {
-		h.Title = strings.ReplaceAll(h.Title, Alerting, AlertingMsg)
-		color = ColorRed
-	}
 
 	// Send to WeChat Work
 	url := Url + c.Query("key")
-	// 处理数据格式
-	msgStr := MsgMarkdown(h, color)
-	if c.Query("type") == "news" {
-		msgStr = MsgNews(h)
-	}
 
-	fmt.Println("发送的消息是：", msgStr)
+	// 消息体
+	msgType := c.Query("type")
+	if msgType == "news" {
+		msgStr := MsgNews(h)
+	} else {
+		msgType = "markdown"
+		msgStr := MsgMarkdown(h)
+	}
 
 	jsonStr := []byte(msgStr)
 	// 发送http请求
@@ -91,10 +80,19 @@ func SendMsg(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("shuju:", string(body))
 
 	_, _ = c.Writer.Write(body)
 	sentCount++
+
+	// 日志记录
+	fmt.Println("MsgType  : ", msgType)
+	fmt.Println("Title    : ", h.Title)
+	fmt.Println("RuleName : ", h.RuleName)
+	fmt.Println("State    : ", h.State)
+	fmt.Println("Message  : ", h.Message)
+	fmt.Println("RuleUrl  : ", h.RuleUrl)
+	fmt.Println("ImageUrl : ", h.ImageUrl)
+	fmt.Println()
 
 	return
 }
@@ -119,12 +117,17 @@ func MsgNews(h *Hook) string {
 }
 
 // 发送消息类型
-func MsgMarkdown(h *Hook, color string) string {
+func MsgMarkdown(h *Hook) string {
+	if strings.Contains(h.Title, OK) {
+		color := ColorGreen
+	} else {
+		color := ColorRed
+	}
 	return fmt.Sprintf(`
 	{
        "msgtype": "markdown",
        "markdown": {
-           "content": "<font color=\"%s\">%s</font>\r\n<font color=\"comment\">%s\r\n[点击查看详情](%s)![](%s)</font>"
+           	"content": "<font color=\"%s\">[%s]</font> <font>%s</font>\r\n<font color=\"comment\">%s\r\n[点击查看详情](%s)![](%s)</font>"
        }
-  }`, color, h.Title, h.Message, h.RuleUrl, h.ImageUrl)
+  }`, color, h.State, h.RuleName, h.Message, h.RuleUrl, h.ImageUrl)
 }

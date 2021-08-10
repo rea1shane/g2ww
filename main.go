@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -15,12 +16,17 @@ import (
 var srv *http.Server
 
 func main() {
+	// 定义变量 用于接收命令行参数
+	var port int
+	flag.IntVar(&port, "port", 3001, "Server port, default: 3001")
+	fmt.Println("G2WW server running on port %d", port)
+
 	app := gin.Default()
 	// Server Info
 	app.GET("/", GetSendCount)
 	app.POST("/send", SendMsg)
 	srv = &http.Server{
-		Addr:    "0.0.0.0:88",
+		Addr:    fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: app,
 	}
 
