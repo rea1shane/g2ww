@@ -89,7 +89,6 @@ func SendMsg(c *gin.Context) {
 		return
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
 	sentCount++
 
 	// 日志记录
