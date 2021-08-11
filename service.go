@@ -11,6 +11,9 @@ import (
 	"strconv"
 )
 
+// TODO 筛选 Hook 中有用的字段
+// TODO 更新 MsgMarkdown 消息结构
+
 // Hook 注释的为数据类型对不上的结构
 type Hook struct {
 	ImageUrl string `json:"imageUrl"`
@@ -145,17 +148,16 @@ func MsgNews(h *Hook) string {
 		{
 			"msgtype": "news",
 			"news": {
-			  "articles": [
-				{
-				  "title": "%s",
-				  "description": "%s",
-				  "url": "%s",
-				  "picurl": "%s"
-				}
-			  ]
+			  	"articles": [
+					{
+				  		"title": "%s",
+				  		"description": "%s",
+				  		"url": "%s",
+				  		"picurl": "%s"
+					}
+			  	]
 			}
-		  }
-		`, h.Title, h.Message, h.RuleUrl, h.ImageUrl)
+		}`, h.Title, h.Message, h.RuleUrl, h.ImageUrl)
 }
 
 // MsgMarkdown 发送消息类型
@@ -172,12 +174,12 @@ func MsgMarkdown(h *Hook) string {
 		stateMsg = h.State
 	}
 	return fmt.Sprintf(`
-	{
-       "msgtype": "markdown",
-       "markdown": {
-           	"content": "<font color=\"%s\">[%s]</font> <font>%s</font>\r\n<font color=\"comment\">%s\r\n[点击查看详情](%s)![](%s)</font>"
-       }
-  }`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.ImageUrl)
+		{
+		   	"msgtype": "markdown",
+		   	"markdown": {
+				"content": "<font color=\"%s\">[%s]</font> <font>%s</font>\r\n<font color=\"comment\">%s\r\n[点击查看详情](%s)![](%s)</font>"
+		   	}
+		}`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.ImageUrl)
 }
 
 func PrintCutOffRule() {
