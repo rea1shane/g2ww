@@ -18,10 +18,13 @@
 2. 在 `Url` 里添写 `http://{host}:{port}/send?key={bot_key}`；
 3. 点击 `Send Test`，能够正确看到监控信息后点击 `Save`；
 
-## 备注
+## 消息类型
 实现了发送企业微信的两种类型的消息：
 - `markdown`（默认）
 - `news`（通过 grafana webhook url 的 `type=news` 参数启用）
 
+## 运行状态
+通过 `GET http://{host}:{port}/` 接口可以获取 g2ww 服务的运行状态, 获取 `发送成功` 和 `发送失败` 的消息数。
+
 ## 相关文档
-[群机器人配置说明](https://work.weixin.qq.com/api/doc/90000/90136/91770)
+[企业微信群机器人配置说明](https://work.weixin.qq.com/api/doc/90000/90136/91770)
