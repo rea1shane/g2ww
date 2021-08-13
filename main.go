@@ -4,8 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"g2ww/grafana/ngalert"
-	"g2ww/grafana/old"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -28,12 +26,11 @@ func main() {
 
 	app := gin.Default()
 	// Server Info
+	app.GET("/", GetSendCount)
 	if version == "ngalert" {
-		app.GET("/", ngalert.GetSendCount)
-		app.POST("/send", ngalert.SendMsg)
+		app.POST("/send", SendMsgNgalert)
 	} else if version == "old" {
-		app.GET("/", old.GetSendCount)
-		app.POST("/send", old.SendMsg)
+		app.POST("/send", SendMsgOld)
 	} else {
 		fmt.Printf(`[Error] error param "version": %v`, version)
 		fmt.Println()
