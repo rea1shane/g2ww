@@ -1,17 +1,14 @@
 # Grafana to Wechat-Work
 该服务的转发功能基于企业微信群机器人，通过 webhook 将告警信息转发到企业微信。
 
-## 环境
-- go version go1.16.7 linux/amd64
-- Grafana v8.1.0 (62e720c06b)
-- CentOS Linux release 7.4.1708 (Core)
-
 ## 安装与运行
 1. 下载 `.zip` 包；
 2. 解压到目标文件夹（推荐 `gopath` 路径）；
 3. 进入文件夹，运行 `go mod tidy` 下载所需依赖；
 4. 运行 `go build` 编译为可执行二进制文件；
-5. `./g2ww [-port 3001]` 运行二进制文件，可指定服务启动端口；
+5. `./g2ww [-port 3001] [-version old]` 运行二进制文件：
+   - 可指定服务启动端口，默认端口为 `3001`；
+   - 可指定 Grafana 告警的版本，默认为旧版 `old`，可选新版 `ngalert`；
 
 ## 配置请求方式
 1. 在 grafana 中创建 `Notification channel`，类型为 `webhook`；
@@ -25,6 +22,11 @@
 
 ## 运行状态
 通过 `GET http://{host}:{port}/` 接口可以获取 g2ww 服务的运行状态, 获取 `发送成功` 和 `发送失败` 的消息数。
+
+## 测试环境
+- go version go1.16.7 linux/amd64
+- Grafana v8.1.0 (62e720c06b)
+- CentOS Linux release 7.4.1708 (Core)
 
 ## 相关文档
 [企业微信群机器人配置说明](https://work.weixin.qq.com/api/doc/90000/90136/91770)
