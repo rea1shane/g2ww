@@ -78,7 +78,7 @@ func SendMsg(c *gin.Context, h general.Hook) {
 			}(resp.Body)
 
 			// 日志记录
-			fmt.Println("MsgType     :", msgType)
+			fmt.Println("MsgType  :", msgType)
 			h.PrintAlertLog()
 			fmt.Println()
 		}

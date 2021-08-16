@@ -10,9 +10,9 @@ func CheckStatus(s StatusCode, c *Counter) {
 	} else {
 		c.SentFailureCount++
 	}
-	fmt.Printf("Status Code : %d", s)
+	fmt.Printf("status   : %d", s)
 	fmt.Println()
-	fmt.Printf("Status Msg  : %s", s)
+	fmt.Printf("message  : %s", s)
 	fmt.Println()
 }
 

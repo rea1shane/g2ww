@@ -66,10 +66,10 @@ func (h Hook) MsgMarkdown() string {
 }
 
 func (h Hook) PrintAlertLog() {
-	fmt.Println("Title       :", h.Title)
-	fmt.Println("RuleName    :", h.RuleName)
-	fmt.Println("State       :", h.State)
-	fmt.Println("Message     :", h.Message)
-	fmt.Println("RuleUrl     :", h.RuleUrl)
-	fmt.Println("ImageUrl    :", h.ImageUrl)
+	fmt.Println("Title    :", h.Title)
+	fmt.Println("RuleName :", h.RuleName)
+	fmt.Println("State    :", h.State)
+	fmt.Println("Message  :", h.Message)
+	fmt.Println("RuleUrl  :", h.RuleUrl)
+	fmt.Println("ImageUrl :", h.ImageUrl)
 }
