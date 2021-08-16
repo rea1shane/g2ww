@@ -23,6 +23,8 @@ func main() {
 	flag.StringVar(&version, "version", "old", `Grafana alert version, default: "old", optional: "ngalert"`)
 	flag.Parse()
 	fmt.Println("G2WW server running on port", port)
+	fmt.Printf("G2WW server is based on the %v version", version)
+	fmt.Println()
 
 	app := gin.Default()
 	// Server Info
