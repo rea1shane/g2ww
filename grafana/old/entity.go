@@ -50,13 +50,19 @@ func (h Hook) MsgMarkdown() string {
 		color = ww.WechatWorkColorRed
 		stateMsg = h.State
 	}
+	var imageUrl string
+	if h.ImageUrl == "" {
+		imageUrl = ""
+	} else {
+		imageUrl = fmt.Sprintf(`\n**Image**: [%s](%s)`, h.ImageUrl, h.ImageUrl)
+	}
 	return fmt.Sprintf(`
 		{
 		   	"msgtype": "markdown",
 		   	"markdown": {
-				"content": "# <font color=\"%s\">[%s]</font> %s\n\n\n**Message**: <font color=\"comment\">%s</font>\n**Grafana**: [%s](%s)\n**AlertImage**: [%s](%s)"
+				"content": "# <font color=\"%s\">[%s]</font> %s\n\n\n**Message**: <font color=\"comment\">%s</font>\n**Link**: [%s](%s)`+imageUrl+`"
 		   	}
-		}`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.RuleUrl, h.ImageUrl, h.ImageUrl)
+		}`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.RuleUrl)
 }
 
 func (h Hook) PrintAlertLog() {
