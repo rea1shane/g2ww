@@ -1,16 +1,19 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func CheckStatus(status int, c *Counter) {
-	if status == OK {
+func CheckStatus(s StatusCode, c *Counter) {
+	if s == OK {
 		c.SentSuccessCount++
 	} else {
 		c.SentFailureCount++
-		if status == InternalError {
-			fmt.Println(`[Error] Internal Error`)
-		}
 	}
+	fmt.Printf("Status Code : %d", s)
+	fmt.Println()
+	fmt.Printf("Status Msg  : %s", s)
+	fmt.Println()
 }
 
 func PrintCutOffRule() {

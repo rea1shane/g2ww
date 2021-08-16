@@ -6,3 +6,9 @@ const (
 	OKMsg       = "OK"
 	AlertingMsg = "Alerting"
 )
+
+type Hook interface {
+	MsgNews() string
+	MsgMarkdown() string
+	PrintAlertLog()
+}

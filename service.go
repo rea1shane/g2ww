@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"g2ww/common"
+	"g2ww/grafana/general"
 	"g2ww/grafana/ngalert"
 	"g2ww/grafana/old"
 	"g2ww/ww"
@@ -32,15 +33,17 @@ func GetSendCount(c *gin.Context) {
 	return
 }
 
-func SendMsgOld(c *gin.Context) {
+func SendMsg(c *gin.Context, h general.Hook) {
 	common.PrintCutOffRule()
 	status := common.InternalError
 
 	// 将 webhook 数据装载为 struct 对象
-	h := old.Hook{}
 	data, _ := ioutil.ReadAll(c.Request.Body)
 	if err := json.Unmarshal(data, &h); err != nil {
-		status = GrafanaWebhookUnmarshalJsonError(c, err)
+		fmt.Println(err.Error())
+		fmt.Println()
+		status = common.GrafanaWebhookUnmarshalJsonError
+		_, _ = c.Writer.WriteString(status.String())
 	} else {
 		// 组装 url
 		url := ww.WechatWorkBotWebhookUrl + c.Query("key")
@@ -49,10 +52,10 @@ func SendMsgOld(c *gin.Context) {
 		var msgType, msgStr string
 		if c.Query("type") == "news" {
 			msgType = "news"
-			msgStr = MsgNewsOld(&h)
+			msgStr = h.MsgNews()
 		} else {
 			msgType = "markdown"
-			msgStr = MsgMarkdownOld(&h)
+			msgStr = h.MsgMarkdown()
 		}
 
 		// 发送请求
@@ -62,7 +65,10 @@ func SendMsgOld(c *gin.Context) {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			status = ClientCallAPIError(c, err)
+			fmt.Println(err.Error())
+			fmt.Println()
+			status = common.ClientCallAPIError
+			_, _ = c.Writer.WriteString(status.String())
 		} else {
 			status = ww.CheckWechatWorkResponse(resp)
 
@@ -72,82 +78,22 @@ func SendMsgOld(c *gin.Context) {
 			}(resp.Body)
 
 			// 日志记录
-			fmt.Println("MsgType  :", msgType)
-			PrintAlertLogOld(&h)
+			fmt.Println("MsgType     :", msgType)
+			h.PrintAlertLog()
 			fmt.Println()
 		}
 	}
 	common.CheckStatus(status, &counter)
-	fmt.Println("Status   :", status)
 	fmt.Println()
 	return
+}
+
+func SendMsgOld(c *gin.Context) {
+	h := old.Hook{}
+	SendMsg(c, &h)
 }
 
 func SendMsgNgalert(c *gin.Context) {
-	common.PrintCutOffRule()
-	status := common.InternalError
-
-	// 将 webhook 数据装载为 struct 对象
 	h := ngalert.Hook{}
-	data, _ := ioutil.ReadAll(c.Request.Body)
-	if err := json.Unmarshal(data, &h); err != nil {
-		status = GrafanaWebhookUnmarshalJsonError(c, err)
-	} else {
-		// 组装 url
-		url := ww.WechatWorkBotWebhookUrl + c.Query("key")
-
-		// 消息体
-		var msgType, msgStr string
-		if c.Query("type") == "news" {
-			msgType = "news"
-			msgStr = MsgNewsNgalert(&h)
-		} else {
-			msgType = "markdown"
-			msgStr = MsgMarkdownNgalert(&h)
-		}
-
-		// 发送请求
-		jsonStr := []byte(msgStr)
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-		req.Header.Set("Content-Type", "application/json")
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			status = ClientCallAPIError(c, err)
-		} else {
-			status = ww.CheckWechatWorkResponse(resp)
-
-			// 关闭 response body
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
-
-			// 日志记录
-			fmt.Println("MsgType  :", msgType)
-			PrintAlertLogNgalert(&h)
-			fmt.Println()
-		}
-	}
-	common.CheckStatus(status, &counter)
-	fmt.Println("Status   :", status)
-	fmt.Println()
-	return
-}
-
-func DealError(c *gin.Context, err error, errMsg string) {
-	fmt.Println(errMsg)
-	fmt.Println(err.Error())
-	_, _ = c.Writer.WriteString(errMsg)
-}
-
-func GrafanaWebhookUnmarshalJsonError(c *gin.Context, err error) int {
-	errMsg := `[ERROR] JSON Unmarshal failure`
-	DealError(c, err, errMsg)
-	return common.GrafanaWebhookUnmarshalJsonError
-}
-
-func ClientCallAPIError(c *gin.Context, err error) int {
-	errMsg := `[ERROR] Client call API failure`
-	DealError(c, err, errMsg)
-	return common.ClientCallAPIError
+	SendMsg(c, &h)
 }
