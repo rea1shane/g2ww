@@ -8,6 +8,7 @@ const (
 	ConvertFailureWarning                     StatusCode = 11
 	GrafanaWebhookUnmarshalJsonError          StatusCode = 100001
 	ClientCallAPIError                        StatusCode = 100002
+	GrafanaUnknownStatusWarning               StatusCode = 100003
 	WechatWorkCallAPIError                    StatusCode = 200001
 	WechatWorkCallAPIWrongJsonFormatWarning   StatusCode = 200002
 	WechatWorkParseResponseBodyFailureWarning StatusCode = 200003
@@ -25,6 +26,8 @@ func (s StatusCode) String() string {
 		return "[ERROR] JSON Unmarshal failure when receive Grafana webhook"
 	case ClientCallAPIError:
 		return "[ERROR] Client call API failure"
+	case GrafanaUnknownStatusWarning:
+		return "[Warning] Unknown Status"
 	case WechatWorkCallAPIError:
 		return "[ERROR] Call Wechat-Work API failure"
 	case WechatWorkCallAPIWrongJsonFormatWarning:

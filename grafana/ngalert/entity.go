@@ -71,19 +71,13 @@ func (h Hook) MsgNews() string {
 }
 
 func (h Hook) MsgMarkdown() string {
-	var color string
-	if h.Status == RESOLVED {
-		color = ww.WechatWorkColorGreen
-	} else {
-		color = ww.WechatWorkColorRed
-	}
 	return fmt.Sprintf(`
 		{
 		   	"msgtype": "markdown",
 		   	"markdown": {
-				"content": "# <font color=\"%s\">%s</font>%s"
+				"content": "%s\n%s"
 		   	}
-		}`, color, h.GetTitleStatus(), h.GetAlertDetailList())
+		}`, h.GetStatusCount(), h.GetAlertDetailList())
 }
 
 // PrintAlertLog TODO
@@ -91,17 +85,22 @@ func (h Hook) PrintAlertLog() {
 
 }
 
-func (h Hook) GetTitleStatus() string {
-	return "[" + strings.ToUpper(h.Status) + ":" + strconv.Itoa(len(h.Alerts)) + "]"
-}
-
-// GetTitleAlerts 暂时去掉 显示的感觉些许多余 本应跟在 TitleStatus 后面
-func (h Hook) GetTitleAlerts() string {
-	var alertNames = ""
-	for _, alert := range h.Alerts {
-		alertNames += "「" + alert.Labels.Alertname + "」"
+func (h Hook) GetStatusCount() string {
+	firingCount, resolvedCount := 0, 0
+	for _, a := range h.Alerts {
+		if a.Status == FIRING {
+			firingCount++
+		} else if a.Status == RESOLVED {
+			resolvedCount++
+		} else {
+			fmt.Println(common.GrafanaUnknownStatusWarning)
+		}
 	}
-	return alertNames
+	return fmt.Sprintf(`## 新增告警：<font color=\"%s\">%d</font> 例
+\n ## 恢复正常：<font color=\"%s\">%d</font> 例`,
+		ww.WechatWorkColorRed, firingCount,
+		ww.WechatWorkColorGreen, resolvedCount,
+	)
 }
 
 func (h Hook) GetAlertDetailList() string {
@@ -115,25 +114,32 @@ func (h Hook) GetAlertDetailList() string {
 
 func (a Alert) GetAlertDetail() string {
 	var color, endTimeString string
+	var duringTimeString time.Duration
 	if a.Status == RESOLVED {
 		color = ww.WechatWorkColorGreen
 		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间：</font><font color=\"%s\">%s</font>`, ww.WechatWorkColorGray, ww.WechatWorkColorGreen, a.EndsAt.Format(TimeLayout))
+		duringTimeString = a.EndsAt.Sub(a.StartsAt)
 	} else {
 		color = ww.WechatWorkColorRed
+		duringTimeString = time.Now().Sub(a.StartsAt)
 	}
 	return fmt.Sprintf(
 		`
 ><font color=\"%s\">告警名称：</font><font color=\"%s\">**%s**</font>
+><font color=\"%s\">状态：</font><font color=\"%s\">**%s**</font>
 ><font color=\"%s\">信息：{</font>%s
 ><font color=\"%s\">}</font>
 ><font color=\"%s\">触发时间：</font><font color=\"%s\">%s</font>%s
+><font color=\"%s\">持续时长：</font>%v
 ><font color=\"%s\">图表：</font>[%s](%s)
 ><font color=\"%s\">仪表盘：</font>[%s](%s)
 `,
 		ww.WechatWorkColorGray, color, a.Labels.Alertname,
+		ww.WechatWorkColorGray, color, strings.ToUpper(a.Status),
 		ww.WechatWorkColorGray, a.GetMessage(),
 		ww.WechatWorkColorGray,
 		ww.WechatWorkColorGray, ww.WechatWorkColorRed, a.StartsAt.Format(TimeLayout), endTimeString,
+		ww.WechatWorkColorGray, duringTimeString,
 		ww.WechatWorkColorGray, a.DashboardURL, a.DashboardURL,
 		ww.WechatWorkColorGray, a.PanelURL, a.PanelURL+"&kiosk",
 	)
@@ -147,10 +153,10 @@ func (a Alert) GetMessage() string {
 		color = ww.WechatWorkColorRed
 	}
 	message := ""
-	metricArray := strings.Split(a.ValueString, ", ")
+	metricArray := strings.Split(a.ValueString, "], [")
 	for _, metric := range metricArray {
 		message += "\n"
-		messageRegexp := regexp.MustCompile(`^\[ metric='(.*)' labels=\{(.*)\} value=([-+]?\d+\.?\d*) ]$`)
+		messageRegexp := regexp.MustCompile(`metric='(.*)' labels=\{(.*)\} value=([-+]?\d+\.?\d*)`)
 		params := messageRegexp.FindStringSubmatch(metric)
 		metric := params[1]
 		// 暂时不使用 labels
