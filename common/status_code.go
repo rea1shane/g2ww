@@ -5,6 +5,7 @@ type StatusCode int
 const (
 	InternalError                             StatusCode = -1
 	OK                                        StatusCode = 0
+	ConvertFailureWarning                     StatusCode = 11
 	GrafanaWebhookUnmarshalJsonError          StatusCode = 100001
 	ClientCallAPIError                        StatusCode = 100002
 	WechatWorkCallAPIError                    StatusCode = 200001
@@ -18,6 +19,8 @@ func (s StatusCode) String() string {
 		return "[Error] Internal Error"
 	case OK:
 		return "[OK]"
+	case ConvertFailureWarning:
+		return "[Warning] Var Convert Failure"
 	case GrafanaWebhookUnmarshalJsonError:
 		return "[ERROR] JSON Unmarshal failure when receive Grafana webhook"
 	case ClientCallAPIError:

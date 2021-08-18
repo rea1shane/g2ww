@@ -39,6 +39,7 @@ func SendMsg(c *gin.Context, h general.Hook) {
 
 	// 将 webhook 数据装载为 struct 对象
 	data, _ := ioutil.ReadAll(c.Request.Body)
+	fmt.Println(string(data))
 	if err := json.Unmarshal(data, &h); err != nil {
 		fmt.Println(err.Error())
 		fmt.Println()
@@ -46,6 +47,7 @@ func SendMsg(c *gin.Context, h general.Hook) {
 		_, _ = c.Writer.WriteString(status.String())
 	} else {
 		// 组装 url
+		// 如果想要进行 debug, 需要在链接末尾  + "&debug=1", 然后在 https://open.work.weixin.qq.com/devtool/query 进行 hint 查询
 		url := ww.WechatWorkBotWebhookUrl + c.Query("key")
 
 		// 消息体

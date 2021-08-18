@@ -2,8 +2,14 @@ package old
 
 import (
 	"fmt"
-	"g2ww/grafana/general"
 	"g2ww/ww"
+)
+
+const (
+	OK          = "ok"
+	Alerting    = "alerting"
+	OKMsg       = "OK"
+	AlertingMsg = "Alerting"
 )
 
 type Hook struct {
@@ -40,12 +46,12 @@ func (h Hook) MsgNews() string {
 
 func (h Hook) MsgMarkdown() string {
 	var color, stateMsg string
-	if h.State == general.OK {
+	if h.State == OK {
 		color = ww.WechatWorkColorGreen
-		stateMsg = general.OKMsg
-	} else if h.State == general.Alerting {
+		stateMsg = OKMsg
+	} else if h.State == Alerting {
 		color = ww.WechatWorkColorRed
-		stateMsg = general.AlertingMsg
+		stateMsg = AlertingMsg
 	} else {
 		color = ww.WechatWorkColorRed
 		stateMsg = h.State
@@ -60,9 +66,9 @@ func (h Hook) MsgMarkdown() string {
 		{
 		   	"msgtype": "markdown",
 		   	"markdown": {
-				"content": "# <font color=\"%s\">[%s]</font> %s\n\n\n**Message**: <font color=\"comment\">%s</font>\n**Link**: [%s](%s)`+imageUrl+`"
+				"content": "# <font color=\"%s\">[%s]</font> %s\n\n\n**Message**: <font color=\"%s\">%s</font>\n**Link**: [%s](%s)%s"
 		   	}
-		}`, color, stateMsg, h.RuleName, h.Message, h.RuleUrl, h.RuleUrl)
+		}`, color, stateMsg, h.RuleName, ww.WechatWorkColorGray, h.Message, h.RuleUrl, h.RuleUrl, imageUrl)
 }
 
 func (h Hook) PrintAlertLog() {
