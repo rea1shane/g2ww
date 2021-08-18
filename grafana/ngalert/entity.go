@@ -22,6 +22,7 @@ type Labels struct {
 }
 
 type Annotations struct {
+	Unit string `json:"Unit"`
 }
 
 type Alert struct {
@@ -116,22 +117,23 @@ func (a Alert) GetAlertDetail() string {
 	var color, endTimeString string
 	if a.Status == RESOLVED {
 		color = ww.WechatWorkColorGreen
-		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间: </font>%s`, ww.WechatWorkColorGray, a.EndsAt.Format(TimeLayout))
+		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间：</font><font color=\"%s\">%s</font>`, ww.WechatWorkColorGray, ww.WechatWorkColorGreen, a.EndsAt.Format(TimeLayout))
 	} else {
 		color = ww.WechatWorkColorRed
 	}
 	return fmt.Sprintf(
 		`
-><font color=\"%s\">告警名称: </font><font color=\"%s\">**%s**</font>
-><font color=\"%s\">信息: </font>%s
-><font color=\"%s\">触发时间: </font>%s%s
-><font color=\"%s\">图表: </font>[%s](%s)
-><font color=\"%s\">仪表盘: </font>[%s](%s)
+><font color=\"%s\">告警名称：</font><font color=\"%s\">**%s**</font>
+><font color=\"%s\">信息：{</font>%s
+><font color=\"%s\">}</font>
+><font color=\"%s\">触发时间：</font><font color=\"%s\">%s</font>%s
+><font color=\"%s\">图表：</font>[%s](%s)
+><font color=\"%s\">仪表盘：</font>[%s](%s)
 `,
 		ww.WechatWorkColorGray, color, a.Labels.Alertname,
 		ww.WechatWorkColorGray, a.GetMessage(),
-		ww.WechatWorkColorGray, a.StartsAt.Format(TimeLayout),
-		endTimeString,
+		ww.WechatWorkColorGray,
+		ww.WechatWorkColorGray, ww.WechatWorkColorRed, a.StartsAt.Format(TimeLayout), endTimeString,
 		ww.WechatWorkColorGray, a.DashboardURL, a.DashboardURL,
 		ww.WechatWorkColorGray, a.PanelURL, a.PanelURL+"&kiosk",
 	)
@@ -145,19 +147,24 @@ func (a Alert) GetMessage() string {
 		color = ww.WechatWorkColorRed
 	}
 	message := ""
-	messageRegexp := regexp.MustCompile(`^\[ metric='(.*)' labels=\{\} value=([-+]?\d+\.?\d*) ]$`)
-	params := messageRegexp.FindStringSubmatch(a.ValueString)
-	metric := params[1]
-	value, err := strconv.ParseFloat(params[2], 64)
-	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Printf("%s", common.ConvertFailureWarning)
-		fmt.Println()
-		fmt.Printf("value: %s\n", params[2])
-		fmt.Println()
-		fmt.Println()
+	metricArray := strings.Split(a.ValueString, ", ")
+	for _, metric := range metricArray {
+		message += "\n"
+		messageRegexp := regexp.MustCompile(`^\[ metric='(.*)' labels=\{(.*)\} value=([-+]?\d+\.?\d*) ]$`)
+		params := messageRegexp.FindStringSubmatch(metric)
+		metric := params[1]
+		// 暂时不使用 labels
+		_ = params[2]
+		value, err := strconv.ParseFloat(params[3], 64)
+		if err != nil {
+			fmt.Println(err.Error())
+			fmt.Printf("%s", common.ConvertFailureWarning)
+			fmt.Println()
+			fmt.Printf("value: %s\n", params[3])
+			fmt.Println()
+			fmt.Println()
+		}
+		message += fmt.Sprintf(`\t\t%s：<font color=\"%s\">**%.2f%s**</font>`, metric, color, value, a.Annotations.Unit)
 	}
-	message += fmt.Sprintf(`\n\t<font color=\"%s\">指标: </font><font color=\"%s\">**%s**</font>`, ww.WechatWorkColorGray, color, metric)
-	message += fmt.Sprintf(`\n\t<font color=\"%s\">值    : </font><font color=\"%s\">**%.2f**</font>`, ww.WechatWorkColorGray, color, value)
 	return message
 }
