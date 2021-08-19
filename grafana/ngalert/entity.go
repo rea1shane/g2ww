@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	TimeLayout = "2006-01-02 Mon 15:04:05"
-
 	RESOLVED = "resolved"
 	FIRING   = "firing"
 )
@@ -117,11 +115,14 @@ func (a Alert) GetAlertDetail() string {
 	var duringTimeString time.Duration
 	if a.Status == RESOLVED {
 		color = ww.WechatWorkColorGreen
-		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间：</font><font color=\"%s\">%s</font>`, ww.WechatWorkColorGray, ww.WechatWorkColorGreen, a.EndsAt.Format(TimeLayout))
+		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间：</font><font color=\"%s\">%s</font>`, ww.WechatWorkColorGray, ww.WechatWorkColorGreen, a.EndsAt.Format(common.TimeLayout))
 		duringTimeString = a.EndsAt.Sub(a.StartsAt)
 	} else {
 		color = ww.WechatWorkColorRed
 		duringTimeString = time.Now().Sub(a.StartsAt)
+	}
+	if duringTimeString < 0 {
+		fmt.Println(common.GrafanaWrongTimeSynchronizationError)
 	}
 	return fmt.Sprintf(
 		`
@@ -138,8 +139,8 @@ func (a Alert) GetAlertDetail() string {
 		ww.WechatWorkColorGray, color, strings.ToUpper(a.Status),
 		ww.WechatWorkColorGray, a.GetMessage(),
 		ww.WechatWorkColorGray,
-		ww.WechatWorkColorGray, ww.WechatWorkColorRed, a.StartsAt.Format(TimeLayout), endTimeString,
-		ww.WechatWorkColorGray, duringTimeString,
+		ww.WechatWorkColorGray, ww.WechatWorkColorRed, a.StartsAt.Format(common.TimeLayout), endTimeString,
+		ww.WechatWorkColorGray, common.FormatDuration(duringTimeString),
 		ww.WechatWorkColorGray, a.DashboardURL, a.DashboardURL,
 		ww.WechatWorkColorGray, a.PanelURL, a.PanelURL+"&kiosk",
 	)
@@ -170,7 +171,7 @@ func (a Alert) GetMessage() string {
 			fmt.Println()
 			fmt.Println()
 		}
-		message += fmt.Sprintf(`\t\t%s：<font color=\"%s\">**%.2f%s**</font>`, metric, color, value, a.Annotations.Unit)
+		message += fmt.Sprintf(`\t\t%s：<font color=\"%s\">%.2f%s</font>`, metric, color, value, a.Annotations.Unit)
 	}
 	return message
 }
