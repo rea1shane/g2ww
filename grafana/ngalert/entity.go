@@ -115,7 +115,7 @@ func (a Alert) GetAlertDetail() string {
 	var duringTimeString time.Duration
 	if a.Status == RESOLVED {
 		color = ww.WechatWorkColorGreen
-		endTimeString = fmt.Sprintf(`\n><font color=\"%s\">恢复时间：</font><font color=\"%s\">%s</font>`, ww.WechatWorkColorGray, ww.WechatWorkColorGreen, a.EndsAt.Format(common.TimeLayout))
+		endTimeString = fmt.Sprintf(`\n>恢复时间：<font color=\"%s\">%s</font>`, ww.WechatWorkColorGreen, a.EndsAt.Format(common.TimeLayout))
 		duringTimeString = a.EndsAt.Sub(a.StartsAt)
 	} else {
 		color = ww.WechatWorkColorRed
@@ -126,23 +126,23 @@ func (a Alert) GetAlertDetail() string {
 	}
 	return fmt.Sprintf(
 		`
-><font color=\"%s\">告警名称：</font><font color=\"%s\">**%s**</font>
-><font color=\"%s\">状态：</font><font color=\"%s\">**%s**</font>
-><font color=\"%s\">信息：{</font>%s
-><font color=\"%s\">}</font>
-><font color=\"%s\">触发时间：</font><font color=\"%s\">%s</font>%s
-><font color=\"%s\">持续时长：</font>%v
-><font color=\"%s\">图表：</font>[%s](%s)
-><font color=\"%s\">仪表盘：</font>[%s](%s)
+>告警名称：<font color=\"%s\">**%s**</font>
+>状态：<font color=\"%s\">**%s**</font>
+>信息：{%s
+>}
+>触发时间：<font color=\"%s\">%s</font>%s
+>持续时长：%v
+>图表：[%s](%s)
+>仪表盘：[%s](%s)
 `,
-		ww.WechatWorkColorGray, color, a.Labels.Alertname,
-		ww.WechatWorkColorGray, color, strings.ToUpper(a.Status),
-		ww.WechatWorkColorGray, a.GetMessage(),
-		ww.WechatWorkColorGray,
-		ww.WechatWorkColorGray, ww.WechatWorkColorRed, a.StartsAt.Format(common.TimeLayout), endTimeString,
-		ww.WechatWorkColorGray, common.FormatDuration(duringTimeString),
-		ww.WechatWorkColorGray, a.DashboardURL, a.DashboardURL,
-		ww.WechatWorkColorGray, a.PanelURL, a.PanelURL+"&kiosk",
+		color, a.Labels.Alertname,
+		color, strings.ToUpper(a.Status),
+		a.GetMessage(),
+
+		ww.WechatWorkColorRed, a.StartsAt.Format(common.TimeLayout), endTimeString,
+		common.FormatDuration(duringTimeString),
+		a.DashboardURL, a.DashboardURL,
+		a.PanelURL, a.PanelURL+"&kiosk",
 	)
 }
 
