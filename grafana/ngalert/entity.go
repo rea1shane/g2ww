@@ -78,26 +78,64 @@ func (h Hook) MsgMarkdown() string {
 		}`, h.GetStatusCount(), h.GetAlertDetailList())
 }
 
-// PrintAlertLog TODO
 func (h Hook) PrintAlertLog() {
-
+	firingCount, resolvedCount, firingList, resolvedList := h.StatusCount()
+	var firingListString, resolvedListString string
+	if len(firingList) != 0 {
+		firingListString = ": "
+		for _, s := range firingList {
+			firingListString += "[ " + s + " ]"
+		}
+	}
+	if len(resolvedList) != 0 {
+		resolvedListString = ": "
+		for _, s := range resolvedList {
+			resolvedListString += "[ " + s + " ]"
+		}
+	}
+	fmt.Printf(`新增告警 %d 例%s`, firingCount, firingListString)
+	fmt.Println()
+	fmt.Printf(`恢复正常 %d 例%s`, resolvedCount, resolvedListString)
+	fmt.Println()
 }
 
-func (h Hook) GetStatusCount() string {
-	firingCount, resolvedCount := 0, 0
+func (h Hook) StatusCount() (int, int, []string, []string) {
+	var firingCount, resolvedCount int
+	var firingList, resolvedList []string
 	for _, a := range h.Alerts {
 		if a.Status == FIRING {
 			firingCount++
+			firingList = append(firingList, a.Labels.Alertname)
 		} else if a.Status == RESOLVED {
 			resolvedCount++
+			resolvedList = append(resolvedList, a.Labels.Alertname)
 		} else {
 			fmt.Println(common.GrafanaUnknownStatusWarning)
+			fmt.Println(a)
 		}
 	}
-	return fmt.Sprintf(`## 新增告警：<font color=\"%s\">%d</font> 例
-\n ## 恢复正常：<font color=\"%s\">%d</font> 例`,
-		ww.WechatWorkColorRed, firingCount,
-		ww.WechatWorkColorGreen, resolvedCount,
+	return firingCount, resolvedCount, firingList, resolvedList
+}
+
+func (h Hook) GetStatusCount() string {
+	firingCount, resolvedCount, firingList, resolvedList := h.StatusCount()
+	var firingListString, resolvedListString string
+	if len(firingList) != 0 {
+		firingListString = "："
+		for _, s := range firingList {
+			firingListString += fmt.Sprintf(`\n\t\t<font color=\"%s\">**`+s+`**</font>`, ww.WechatWorkColorRed)
+		}
+	}
+	if len(resolvedList) != 0 {
+		resolvedListString = "："
+		for _, s := range resolvedList {
+			resolvedListString += fmt.Sprintf(`\n\t\t<font color=\"%s\">**`+s+`**</font>`, ww.WechatWorkColorGreen)
+		}
+	}
+	return fmt.Sprintf(`## 新增告警 <font color=\"%s\">%d</font> 例%s
+\n ## 恢复正常 <font color=\"%s\">%d</font> 例%s`,
+		ww.WechatWorkColorRed, firingCount, firingListString,
+		ww.WechatWorkColorGreen, resolvedCount, resolvedListString,
 	)
 }
 
@@ -154,24 +192,28 @@ func (a Alert) GetMessage() string {
 		color = ww.WechatWorkColorRed
 	}
 	message := ""
-	metricArray := strings.Split(a.ValueString, "], [")
-	for _, metric := range metricArray {
-		message += "\n"
-		messageRegexp := regexp.MustCompile(`metric='(.*)' labels=\{(.*)\} value=([-+]?\d+\.?\d*)`)
-		params := messageRegexp.FindStringSubmatch(metric)
-		metric := params[1]
-		// 暂时不使用 labels
-		_ = params[2]
-		value, err := strconv.ParseFloat(params[3], 64)
-		if err != nil {
-			fmt.Println(err.Error())
-			fmt.Printf("%s", common.ConvertFailureWarning)
-			fmt.Println()
-			fmt.Printf("value: %s\n", params[3])
-			fmt.Println()
-			fmt.Println()
+	if a.ValueString != "" {
+		metricArray := strings.Split(a.ValueString, "], [")
+		for _, metric := range metricArray {
+			message += "\n"
+			messageRegexp := regexp.MustCompile(`metric='(.*)' labels=\{(.*)\} value=([-+]?\d+\.?\d*)`)
+			params := messageRegexp.FindStringSubmatch(metric)
+			metric := params[1]
+			// 暂时不使用 labels
+			_ = params[2]
+			value, err := strconv.ParseFloat(params[3], 64)
+			if err != nil {
+				fmt.Println(err.Error())
+				fmt.Printf("%s", common.ConvertFailureWarning)
+				fmt.Println()
+				fmt.Printf("value: %s\n", params[3])
+				fmt.Println()
+				fmt.Println()
+			}
+			message += fmt.Sprintf(`\t\t%s：<font color=\"%s\">%.2f%s</font>`, metric, color, value, a.Annotations.Unit)
 		}
-		message += fmt.Sprintf(`\t\t%s：<font color=\"%s\">%.2f%s</font>`, metric, color, value, a.Annotations.Unit)
+	} else {
+		message = fmt.Sprintf(`\n\t\t<font color=\"%s\">很奇怪，我也不知道为什么 Grafana 没有携带消息 ╮(╯▽╰)╭</font>`, ww.WechatWorkColorGray)
 	}
 	return message
 }
