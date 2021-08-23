@@ -18,23 +18,28 @@ var srv *http.Server
 func main() {
 	// 定义变量 用于接收命令行参数
 	var port int
-	var version string
+	var alertVersion string
 	flag.IntVar(&port, "port", 3001, `Server port, default: 3001`)
-	flag.StringVar(&version, "version", "old", `Grafana alert version, default: "old", optional: "ngalert"`)
+	flag.StringVar(&alertVersion, "alertversion", "", `Grafana alert version, default: "", optional: "ngalert"`)
 	flag.Parse()
-	fmt.Println("G2WW server running on port", port)
-	fmt.Printf("G2WW server is based on the %v version", version)
+	fmt.Printf("G2WW server running on port %v", port)
+	fmt.Println()
+	// 此处多此一举的原因是为了适应 grafana 的变量 可视情况改掉
+	if alertVersion == "" {
+		alertVersion = "old"
+	}
+	fmt.Printf("G2WW server is based on the %v alert version", alertVersion)
 	fmt.Println()
 
 	app := gin.Default()
 	// Server Info
 	app.GET("/", GetSendCount)
-	if version == "ngalert" {
+	if alertVersion == "ngalert" {
 		app.POST("/send", SendMsgNgalert)
-	} else if version == "old" {
+	} else if alertVersion == "old" {
 		app.POST("/send", SendMsgOld)
 	} else {
-		fmt.Printf(`[Error] error param "version": %v`, version)
+		fmt.Printf(`[Error] error param "alertversion": %v`, alertVersion)
 		fmt.Println()
 		shutdown()
 	}

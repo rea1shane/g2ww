@@ -8,9 +8,9 @@
 2. 解压到目标文件夹（推荐 `gopath` 路径）；
 3. 进入文件夹，运行 `go mod tidy` 下载所需依赖；
 4. 运行 `go build` 编译为可执行二进制文件；
-5. `./g2ww [-port 3001] [-version old]` 运行二进制文件：
+5. `./g2ww [-port 3001] [-alertversion old]` 运行二进制文件：
     - 可指定服务启动端口，默认端口为 `3001`；
-    - 可指定 Grafana 告警的版本，默认为旧版 `old`，可选新版 `ngalert`；
+    - 可指定 Grafana 告警的版本，默认为旧版，可选新版 `-alertversion ngalert`；
 
 ## 配置请求方式
 
