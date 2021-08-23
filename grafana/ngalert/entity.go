@@ -73,9 +73,9 @@ func (h Hook) MsgMarkdown() string {
 		{
 		   	"msgtype": "markdown",
 		   	"markdown": {
-				"content": "%s\n%s"
+				"content": "# %s\n\n\n%s\n%s"
 		   	}
-		}`, h.GetStatusCount(), h.GetAlertDetailList())
+		}`, h.Receiver, h.GetStatusCount(), h.GetAlertDetailList())
 }
 
 func (h Hook) PrintAlertLog() {
@@ -93,6 +93,8 @@ func (h Hook) PrintAlertLog() {
 			resolvedListString += "[ " + s + " ]"
 		}
 	}
+	fmt.Printf(`集群名称: %s`, h.Receiver)
+	fmt.Println()
 	fmt.Printf(`新增告警 %d 例%s`, firingCount, firingListString)
 	fmt.Println()
 	fmt.Printf(`恢复正常 %d 例%s`, resolvedCount, resolvedListString)
