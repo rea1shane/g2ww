@@ -182,7 +182,7 @@ func (a Alert) GetAlertDetail() string {
 		ww.WechatWorkColorRed, a.StartsAt.Format(common.TimeLayout), endTimeString,
 		common.FormatDuration(duringTimeString),
 		a.DashboardURL, a.DashboardURL,
-		a.PanelURL, a.PanelURL+"&kiosk",
+		a.PanelURL, a.PanelURL+"&kiosk=full",
 	)
 }
 
