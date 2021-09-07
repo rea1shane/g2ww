@@ -171,22 +171,20 @@ func (a Alert) GetAlertDetail() string {
 >信息：{%s
 >}
 >触发时间：<font color=\"%s\">%s</font>%s
->持续时长：%v
->图表：[%s](%s)
->仪表盘：[%s](%s)
+>持续时长：%v%v%v
 `,
 		color, a.Labels.Alertname,
 		color, strings.ToUpper(a.Status),
-		a.GetMessage(),
+		a.GetMetricMessage(),
 
 		ww.WechatWorkColorRed, a.StartsAt.Format(common.TimeLayout), endTimeString,
 		common.FormatDuration(duringTimeString),
-		a.DashboardURL, a.DashboardURL,
-		a.PanelURL, a.PanelURL+"&kiosk=full",
+		a.GetDashboardMessage(),
+		a.GetPanelMessage(),
 	)
 }
 
-func (a Alert) GetMessage() string {
+func (a Alert) GetMetricMessage() string {
 	var color string
 	if a.Status == RESOLVED {
 		color = ww.WechatWorkColorGreen
@@ -218,4 +216,20 @@ func (a Alert) GetMessage() string {
 		message = fmt.Sprintf(`\n\t\t<font color=\"%s\">很奇怪，我也不知道为什么 Grafana 没有携带消息 ╮(╯▽╰)╭</font>`, ww.WechatWorkColorGray)
 	}
 	return message
+}
+
+func (a Alert) GetDashboardMessage() string {
+	if a.DashboardURL == "" {
+		return ""
+	} else {
+		return fmt.Sprintf(`\n>图表：[%s](%s)`, a.DashboardURL, a.DashboardURL+"?orgId=1&kiosk=full")
+	}
+}
+
+func (a Alert) GetPanelMessage() string {
+	if a.PanelURL == "" {
+		return ""
+	} else {
+		return fmt.Sprintf(`\n>仪表盘：[%s](%s)`, a.PanelURL, a.PanelURL+"&kiosk=full")
+	}
 }
