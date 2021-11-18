@@ -39,6 +39,7 @@ func SendMsg(c *gin.Context, h general.Hook) {
 
 	// 将 webhook 数据装载为 struct 对象
 	data, _ := ioutil.ReadAll(c.Request.Body)
+	// 用于 debug 输出消息体, 测试时打开
 	// fmt.Println(string(data))
 	if err := json.Unmarshal(data, &h); err != nil {
 		fmt.Println(err.Error())
